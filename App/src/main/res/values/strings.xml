@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">BluetoothTest</string>
-    <string name="hello_world">BluetoothTest</string>
+    <string name="hello_world">BluetoothTest\nTest</string>
     <string name="action_settings">Settings</string>
 
 </resources>

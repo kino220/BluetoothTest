@@ -18,11 +18,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 import android.view.animation.Animation;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 /* 大体TechBoosterのコードを参考に作ってる */
@@ -30,8 +32,6 @@ import java.util.Set;
 public class MainActivity extends ActionBarActivity {
     String tag = "BluetoothSample";
     private final int REQUEST_ENABLE_BLUETOOTH = 10;
-    ArrayAdapter pairedDeviceAdapter;
-    ArrayAdapter nonPairedDeviceAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,47 +43,7 @@ public class MainActivity extends ActionBarActivity {
                     .commit();
         }
 
-        //BluetoothAdapter取得
-        BluetoothAdapter mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(!mBtAdapter.equals(null)){
-            //Bluetooth対応端末の場合の処理
-            Log.i(tag,"Bluetoothがサポートされてます。");
-        }else{
-            //Bluetooth非対応端末の場合の処理
-            Log.i(tag,"Bluetoothがサポートれていません。");
-            finish();
-        }
-        boolean btEnable = mBtAdapter.isEnabled();
 
-        if(btEnable == true){
-            //BluetoothがONだった場合の処理
-        }else{
-            //OFFだった場合、ONにすることを促すダイアログを表示する画面に遷移
-            Intent btOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(btOn, REQUEST_ENABLE_BLUETOOTH);
-        }
-
-        //接続履歴のあるデバイスを取得
-        pairedDeviceAdapter = new ArrayAdapter(this, R.layout.rowdata);
-//BluetoothAdapterから、接続履歴のあるデバイスの情報を取得
-        Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
-        if(pairedDevices.size() > 0){
-            //接続履歴のあるデバイスが存在する
-            for(BluetoothDevice device:pairedDevices){
-                //接続履歴のあるデバイスの情報を順に取得してアダプタに詰める
-                //getName()・・・デバイス名取得メソッド
-                //getAddress()・・・デバイスのMACアドレス取得メソッド
-                pairedDeviceAdapter.add(device.getName() + "\n" + device.getAddress());
-            }
-
-            //レイアウトインフレーター使用
-            LayoutInflater factory = LayoutInflater.from(this);
-            View layInfView = factory.inflate(R.layout.fragment_main,null);
-
-            ListView deviceList = (ListView)layInfView.findViewById(R.id.pairedDeviceList);
-            deviceList.setAdapter(pairedDeviceAdapter);
-
-        }
     }
 
     @Override
@@ -126,6 +86,11 @@ public class MainActivity extends ActionBarActivity {
      */
     public static class PlaceholderFragment extends Fragment {
 
+        String tag = "BluetoothSample";
+        private final int REQUEST_ENABLE_BLUETOOTH = 10;
+        ArrayAdapter<String> pairedDeviceAdapter;
+        ArrayAdapter<String> nonPairedDeviceAdapter;
+
         public PlaceholderFragment() {
         }
 
@@ -133,6 +98,57 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            //BluetoothAdapter取得
+            BluetoothAdapter mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+            if(!mBtAdapter.equals(null)){
+                //Bluetooth対応端末の場合の処理
+                Log.d(tag,"Bluetoothがサポートされてます。");
+            }else{
+                //Bluetooth非対応端末の場合の処理
+                Log.d(tag,"Bluetoothがサポートれていません。");
+                getActivity().finish();
+            }
+            boolean btEnable = mBtAdapter.isEnabled();
+
+            if(btEnable == true){
+                //BluetoothがONだった場合の処理
+            }else{
+                //OFFだった場合、ONにすることを促すダイアログを表示する画面に遷移
+                Intent btOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(btOn, REQUEST_ENABLE_BLUETOOTH);
+            }
+
+
+            //BluetoothAdapterから、接続履歴のあるデバイスの情報を取得
+            ArrayList<String> data = new ArrayList<String>();
+            Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
+            if(pairedDevices.size() > 0){
+                //接続履歴のあるデバイスが存在する
+                for(BluetoothDevice device:pairedDevices){
+                    //接続履歴のあるデバイスの情報を順に取得してアダプタに詰める
+                    //getName()・・・デバイス名取得メソッド
+                    //getAddress()・・・デバイスのMACアドレス取得メソッド
+                    data.add(device.getName() + "\n" + device.getAddress());
+                }
+
+                //接続履歴のあるデバイスを取得
+                pairedDeviceAdapter = new ArrayAdapter<String>(getActivity().getApplicationContext(), R.layout.rowdata,data);
+
+
+//                //レイアウトインフレーター使用
+//                LayoutInflater factory = LayoutInflater.from(this);
+//                View layInfView = factory.inflate(R.layout.fragment_main,null);
+
+                ListView deviceList = (ListView)rootView.findViewById(R.id.pairedDeviceList);
+
+                Log.d(tag,String.valueOf(deviceList.getHeight()));
+                pairedDeviceAdapter.add("test");
+                pairedDeviceAdapter.add("list");
+                deviceList.setAdapter(pairedDeviceAdapter);
+
+
+            }
+
             return rootView;
         }
     }
